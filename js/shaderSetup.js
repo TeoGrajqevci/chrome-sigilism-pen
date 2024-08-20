@@ -26,6 +26,10 @@ export default class ShaderCanvas {
         this.shaderCanvas.style.pointerEvents = 'none'; // Disable pointer events
         this.shaderCanvas.style.userSelect = 'none'; // Disable user selection
 
+        this.loadImage('./reflections.jpg').then((image) => {
+            this.reflectionTexture = image;
+        });
+
         // Set up Three.js renderer
         this.renderer = new THREE.WebGLRenderer({ canvas: this.shaderCanvas });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -64,6 +68,18 @@ export default class ShaderCanvas {
     }
 }
 
+// image loader 
+loadImage(imagePath) {
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = imagePath;
+    });
+}
+
+
+
     // Function to load shaders dynamically
     loadShaders(vertexShaderPath, fragmentShaderPath) {
         Promise.all([
@@ -79,6 +95,8 @@ export default class ShaderCanvas {
             this.material = new THREE.ShaderMaterial({
                 uniforms: {
                     uTexture: { type: 't', value: null },
+                    reflectionMap: { type: 't', value: this.reflectionTexture },
+                    roughness: { value: 0.0 },
                     iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
                     brushColor: { value: new THREE.Vector3(0.557, 0.557, 0.557) },
                     threshold: { value: 0.12 },
