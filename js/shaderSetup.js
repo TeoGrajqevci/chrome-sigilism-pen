@@ -103,10 +103,10 @@ export default class ShaderCanvas {
     toggleShaders() {
         if (this.is3D) {
             // Load 2D shaders
-            this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShader2D.glsl');
+            this.loadShaders('./shaders/vertexShader3D.glsl', './shaders/fragmentShader2D.glsl');
         } else {
             // Load 3D shaders
-            this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShaderParallax.glsl');
+            this.loadShaders('./shaders/vertexShader3D.glsl', './shaders/fragmentShaderParallax.glsl');
         }
 
         // Toggle the is3D flag
