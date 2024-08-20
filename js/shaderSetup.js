@@ -35,11 +35,9 @@ export default class ShaderCanvas {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.z = 1;
 
-        this.shaderBasePath = `${window.location.origin}/shaders/`;
-
 
         // Load the initial shaders (3D by default)
-        this.loadShaders(`${this.shaderBasePath}vertexShader3D.glsl`, `${this.shaderBasePath}fragmentShaderParallax.glsl`);
+        this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShaderParallax.glsl`);
 
         // Update the shader canvas on window resize
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -106,13 +104,13 @@ export default class ShaderCanvas {
     toggleShaders() {
         if (this.is3D) {
             // Load 2D shaders
-            this.loadShaders(`${this.shaderBasePath}vertexShader3D.glsl`, `${this.shaderBasePath}fragmentShader2D.glsl`);
+            this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShader2D.glsl`);
         } else {
             // Load 3D shaders
-            this.loadShaders(`${this.shaderBasePath}vertexShader3D.glsl`, `${this.shaderBasePath}fragmentShaderParallax.glsl`);
+            this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShaderParallax.glsl`);
         }
 
-        console.log('this.shaderBasePath', this.shaderBasePath);  
+    
 
         // Toggle the is3D flag
         this.is3D = !this.is3D;
