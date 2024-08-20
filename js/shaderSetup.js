@@ -35,7 +35,8 @@ export default class ShaderCanvas {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.z = 1;
 
-        this.shaderBasePath = process.env.NODE_ENV === 'production' ? '/build/shaders/' : './shaders/';
+        this.shaderBasePath = `${window.location.origin}/shaders/`;
+
 
         // Load the initial shaders (3D by default)
         this.loadShaders(`${this.shaderBasePath}vertexShader3D.glsl`, `${this.shaderBasePath}fragmentShaderParallax.glsl`);
@@ -110,6 +111,8 @@ export default class ShaderCanvas {
             // Load 3D shaders
             this.loadShaders(`${this.shaderBasePath}vertexShader3D.glsl`, `${this.shaderBasePath}fragmentShaderParallax.glsl`);
         }
+
+        console.log('this.shaderBasePath', this.shaderBasePath);  
 
         // Toggle the is3D flag
         this.is3D = !this.is3D;
