@@ -14,7 +14,7 @@ export default class GUI {
         const params = {
             strokeWidth: this.pen.strokeWidth, // Initialize with pen's current stroke width
             smoothing: this.pen.smoothing, // Initial smoothing value
-            brushColor: '#ffffff', // Initial brush color
+            brushColor: '#8e8e8e', // Initial brush color (light grey)
             threshold : 0.12,
             blurRadius: 58,
             is3D: true,

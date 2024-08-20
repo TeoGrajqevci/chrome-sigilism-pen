@@ -36,7 +36,7 @@ export default class ShaderCanvas {
         this.camera.position.z = 1;
 
         // Load the initial shaders (3D by default)
-        this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShaderParallax.glsl');
+        this.loadShaders('../shaders/vertexShader3D.glsl', '../shaders/fragmentShaderParallax.glsl');
 
         // Update the shader canvas on window resize
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -79,7 +79,7 @@ export default class ShaderCanvas {
                 uniforms: {
                     uTexture: { type: 't', value: null },
                     iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
-                    brushColor: { value: new THREE.Vector3(1., 1., 1.) },
+                    brushColor: { value: new THREE.Vector3(0.557, 0.557, 0.557) },
                     threshold: { value: 0.12 },
                     uMouse: { value: new THREE.Vector2(0, 0) },
                 },
@@ -103,10 +103,10 @@ export default class ShaderCanvas {
     toggleShaders() {
         if (this.is3D) {
             // Load 2D shaders
-            this.loadShaders('/shaders/vertexShader2D.glsl', '/shaders/fragmentShader2D.glsl');
+            this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShader2D.glsl');
         } else {
             // Load 3D shaders
-            this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShader3D.glsl');
+            this.loadShaders('/shaders/vertexShader3D.glsl', '/shaders/fragmentShaderParallax.glsl');
         }
 
         // Toggle the is3D flag

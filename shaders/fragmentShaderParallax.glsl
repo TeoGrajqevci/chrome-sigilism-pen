@@ -8,7 +8,7 @@ uniform vec2 uMouse;
 
 // Lighting and bump mapping parameters
 const float steps = 32.0;
-const float delta = 0.015;
+const float delta = 0.02;
 const float sunHeight = 0.5;
 const float bumpHeight = 0.5;
 
@@ -65,7 +65,7 @@ void main() {
     vec3 lPos = normalize(vec3(-uMouse.x,uMouse.y, sunHeight));  // Fixed light position
 
     // Calculate diffuse lighting
-    float ndotL = max(dot(normal, lPos), 0.0);
+    float ndotL = max(dot(normal, lPos), .0);
 
     // Reflection vector for specular highlights
     vec3 reflectedVector = normalize(-reflect(vec3(uv, sunHeight), normal));
@@ -73,11 +73,11 @@ void main() {
     // // Apply lighting to the final color
     // finalColor = getLighting(finalColor, ndotL, lPos, reflectedVector);
 
-        if (smoothThreshold > -1.0 && 
+        if (smoothThreshold > -2.0 && 
         (texColor.r < threshold + 0.2 || texColor.g < threshold + 0.2 || texColor.b < threshold + 0.2)) {
         finalColor = getLighting(brushColor, ndotL, lPos, reflectedVector); 
     } else {
-        finalColor = vec3(0.0);
+        finalColor = vec3(0.0)*100.;
     }
 
     
