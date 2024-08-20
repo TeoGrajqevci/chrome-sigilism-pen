@@ -36,7 +36,7 @@ export default class ShaderCanvas {
         this.camera.position.z = 1;
 
         // Load the initial shaders (3D by default)
-        this.loadShaders('../shaders/vertexShader3D.glsl', '../shaders/fragmentShaderParallax.glsl');
+        this.loadShaders('./shaders/vertexShader3D.glsl', './shaders/fragmentShaderParallax.glsl');
 
         // Update the shader canvas on window resize
         window.addEventListener('resize', () => this.resizeCanvas());
