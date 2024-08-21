@@ -96,7 +96,7 @@ loadImage(imagePath) {
                 uniforms: {
                     uTexture: { type: 't', value: null },
                     reflectionMap: { type: 't', value: this.reflectionTexture },
-                    roughness: { value: 0.0 },
+                    roughness: { value: 0.01 },
                     iResolution: { value: new THREE.Vector3(window.innerWidth, window.innerHeight, 1) },
                     brushColor: { value: new THREE.Vector3(0.557, 0.557, 0.557) },
                     threshold: { value: 0.12 },
@@ -125,7 +125,7 @@ loadImage(imagePath) {
             this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShader2D.glsl`);
         } else {
             // Load 3D shaders
-            this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShaderParallax.glsl`);
+            this.loadShaders(`./shaders/vertexShader3D.glsl`, `./shaders/fragmentShaderRM.glsl`);
         }
 
     

@@ -1,12 +1,10 @@
 // Shader input variables
-uniform sampler2D uTexture;       // Base texture
-uniform sampler2D reflectionMap;  // Environment reflection texture
+uniform sampler2D uTexture;
 varying vec2 vUv;
 uniform vec2 iResolution;
 uniform float threshold;
 uniform vec3 brushColor;
 uniform vec2 uMouse;
-uniform float roughness;          // Roughness value (0 for perfect reflection, 1 for diffuse)
 
 // Lighting and bump mapping parameters
 const float steps = 32.0;
@@ -64,32 +62,28 @@ void main() {
     vec3 normal = normalize(vec3(dx, dy, 1.5));
 
     // Light source position (no mouse control, fixed direction)
-    vec3 lPos = normalize(vec3(-uMouse.x, uMouse.y, sunHeight));  // Fixed light position
+    vec3 lPos = normalize(vec3(-uMouse.x,uMouse.y, sunHeight));  // Fixed light position
 
     // Calculate diffuse lighting
     float ndotL = max(dot(normal, lPos), .0);
 
-    // View direction (assuming camera is at (0, 0, 1))
-    vec3 viewDir = normalize(vec3(uv, 1.0));
-
     // Reflection vector for specular highlights
-    vec3 reflectedVector = reflect(-viewDir, normal);
+    vec3 reflectedVector = normalize(-reflect(vec3(uv, sunHeight), normal));
 
-    // Roughness effect: blending between perfect reflection and diffuse color
-    vec3 reflectionColor = texture2D(reflectionMap, reflectedVector.xy * 0.5 + 0.5).rgb;
-    reflectionColor = mix(reflectionColor, baseColor, roughness);
+    // // Apply lighting to the final color
+    // finalColor = getLighting(finalColor, ndotL, lPos, reflectedVector);
 
-    // Apply lighting and reflection to the final color
-    if (smoothThreshold > -2.0 && 
+        if (smoothThreshold > -2.0 && 
         (texColor.r < threshold + 0.2 || texColor.g < threshold + 0.2 || texColor.b < threshold + 0.2)) {
-        vec3 litColor = getLighting(brushColor, ndotL, lPos, reflectedVector);
-        finalColor = mix(litColor, reflectionColor, 1.0 - roughness);  // Mix with reflection based on roughness
+        finalColor = getLighting(brushColor, ndotL, lPos, reflectedVector); 
     } else {
-        finalColor = vec3(0.0) * 100.;
+        finalColor = vec3(0.0)*100.;
     }
 
+    
     // Tone mapping to prevent color overflow
     finalColor /= 0.5 + finalColor;
+
 
     // Output the final color
     gl_FragColor = vec4(finalColor, 1.0);

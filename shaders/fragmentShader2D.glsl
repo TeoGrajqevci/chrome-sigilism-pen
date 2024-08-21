@@ -19,7 +19,7 @@ void main()
     finalColor = 1.0 - finalColor;
 
     if (smoothThreshold > -1. && (texColor.r < threshold+0.2|| texColor.g < threshold+0.2 || texColor.b < threshold+0.2)) {
-        finalColor = brushColor; 
+        finalColor = vec3(1.0); 
     } else {
         finalColor = vec3(0.0); 
     }
