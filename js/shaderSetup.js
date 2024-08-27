@@ -109,6 +109,8 @@ loadImage(imagePath) {
             // Create geometry and mesh with the new shader material
             this.geometry = new THREE.PlaneGeometry(2, 2);
             this.mesh = new THREE.Mesh(this.geometry, this.material);
+           
+            
             this.scene.add(this.mesh);
 
             // Update the texture from DrawingCanvas after shaders are loaded
