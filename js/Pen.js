@@ -1,12 +1,20 @@
 import paper from 'paper';
 
 export default class Pen {
-    constructor(canvas) {
-        if (!canvas) {
-            throw new Error("Canvas element is required for Pen initialization.");
-        }
-        this.canvas = canvas;
-        paper.setup(this.canvas);
+    constructor() {
+
+        this.paperCanvas = document.createElement('canvas');
+        this.paperCanvas.id = 'PAPER';
+        this.paperCanvas.style.position = 'fixed';  
+        this.paperCanvas.style.top = '0';
+        this.paperCanvas.style.left = '0';
+        this.paperCanvas.style.width = '100%';
+        this.paperCanvas.style.height = '100%';
+        this.paperCanvas.style.zIndex = '0';
+
+        document.body.appendChild(this.paperCanvas);
+
+        paper.setup(this.paperCanvas);
 
         const view = new paper.View({
             width: paper.view.viewSize.width,
@@ -16,7 +24,7 @@ export default class Pen {
         const rectangle = new paper.Path.Rectangle({
             point: [0, 0],
             size: [paper.view.viewSize.width, paper.view.viewSize.height],
-            fillColor: 'white',
+            fillColor: 'black',
         });
 
         rectangle.sendToBack();
@@ -24,7 +32,7 @@ export default class Pen {
         this.tool = new paper.Tool();
         this.path = null;
         this.strokeWidth = 60; // Initial stroke width
-        this.strokeColor = 'black'; // Initial stroke color
+        this.strokeColor = 'white'; // Initial stroke color
         this.smoothing = 5000; // Initial smoothing value
 
         this.tool.onMouseDown = (event) => {
@@ -97,7 +105,6 @@ export default class Pen {
     }
 
 
-
     // Method to update the stroke width
     setStrokeWidth(width) {
         this.strokeWidth = width;
@@ -111,4 +118,5 @@ export default class Pen {
     setSmoothing(smoothing) {
         this.smoothing = smoothing;
     }
+    
 }
