@@ -1,23 +1,11 @@
 import './style.css';
-import DrawingCanvas from '/js/DrawingCanvas';
-import SettingsCanvas from '/js/SettingsCanvas';
 import Pen from '/js/Pen';
 import GUI from '/js/GUI';
-import ShaderCanvas from '/js/shaderSetup'; // Import ShaderCanvas
+import Canvas3D from './js/3d';
 
-// Create a new drawing canvas
-const drawingCanvas = new DrawingCanvas();
-
-// Create a new pen for drawing on the canvas
-const pen = new Pen(drawingCanvas.canvas);
-
-// Create a new settings canvas for the brush preview
-const settingsCanvasInstance = new SettingsCanvas(pen);
-// Create a new shader canvas that uses the drawing canvas as a texture
-const shaderCanvas = new ShaderCanvas(drawingCanvas);
-// Create a new GUI to control the pen and link it to the settings canvas
-const gui = new GUI(pen, settingsCanvasInstance, shaderCanvas); // Pass the shader canvas instance
-
+let pen = new Pen();
+let canvas3D = new Canvas3D();
+let gui = new GUI(pen, canvas3D);
 
 // Set the cursor style to crosshair for the entire document
 document.documentElement.style.cursor = "crosshair";
