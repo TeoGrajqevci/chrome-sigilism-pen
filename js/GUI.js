@@ -53,7 +53,7 @@ export default class GUI {
             Metalness: canvas3D.metalness,
             Roughness: canvas3D.roughness,
             Exposure: canvas3D.exposure,
-            Blur: canvas3D.blurRadius = 30,
+            Blur: canvas3D.blurRadius = 33,
         };
 
         const canvas3DFolder = pane.addFolder({
@@ -85,7 +85,7 @@ export default class GUI {
         });
 
         canvas3DFolder.addBinding(canvas3DParams, 'Blur', {
-            min: 0,
+            min: 20,
             max: 80,
             step: 1,
         }).on('change', (ev) => {
