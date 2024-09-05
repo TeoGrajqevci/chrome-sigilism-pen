@@ -59,10 +59,11 @@ export default class GUI {
 
 
         let canvas3DParams = {
-            Metalness: canvas3D.metalness,
-            Roughness: canvas3D.roughness,
-            Exposure: canvas3D.exposure,
+            // Metalness: canvas3D.metalness,
+            // Roughness: canvas3D.roughness,
+            // Exposure: canvas3D.exposure,
             Blur: canvas3D.blurRadius = 33,
+            HDR:null ,
         };
 
         const canvas3DFolder = pane.addFolder({
@@ -92,6 +93,13 @@ export default class GUI {
         // }).on('change', (ev) => {
         //     canvas3D.exposure = ev.value;
         // });
+
+        canvas3DFolder.addBinding(canvas3DParams, 'HDR',{
+            options: {
+                Dark: 'dark',
+                Light: 'light'
+            }
+            });
 
         canvas3DFolder.addBinding(canvas3DParams, 'Blur', {
             min: 20,

@@ -39,6 +39,11 @@ export default class Canvas3D {
 
         this.pixelRatio;
 
+        this.hdr = {
+            country : './spruit_sunrise_2k.hdr.jpg',
+            studio: './studio_small_03_2k.hdr',
+        }
+
         this.init();
     }
 
@@ -167,11 +172,7 @@ export default class Canvas3D {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
         // Load HDR texture using RGBELoader
-        this.loader = new RGBELoader();
-        this.loader.load('./studio_small_03_2k.hdr', (texture) => {
-            texture.mapping = THREE.EquirectangularReflectionMapping;
-            this.scene.environment = texture;
-        });
+        this.loadHDR(this.hdr.country);
 
         // Initialize post-processing
         this.initPostProcessing();
@@ -181,9 +182,18 @@ export default class Canvas3D {
         setInterval(() => {
             this.canvasTexture.needsUpdate = true;
             this.applyBlurAndUpdateCanvasTexture();
-        }, 30);
+        }, 60);
    
         
+    }
+
+    loadHDR(url) {
+        this.loader = new RGBELoader();
+        this.loader.load(url, (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            this.scene.environment = texture;
+            this.scene.background = texture;
+        });
     }
 
     initPostProcessing() {
