@@ -21,6 +21,15 @@ export default class GUI {
             pen.strokeWidth = ev.value;
         });
 
+        penFolder.addBinding(pen , 'circleRadius', {
+            min: 0,
+            max: 75,
+            step: 1,
+        }).on('change', (ev) => {
+            pen.circleRadius = ev.value;
+        });
+        
+
         penFolder.addButton({
             title: 'Undo',
         }).on('click', () => {
@@ -60,29 +69,29 @@ export default class GUI {
             title: 'Canvas3D',
         });
 
-        canvas3DFolder.addBinding(canvas3DParams, 'Metalness', {
-            min: 0,
-            max: 1,
-            step: 0.01,
-        }).on('change', (ev) => {
-            canvas3D.metalness = ev.value;
-        });
+        // canvas3DFolder.addBinding(canvas3DParams, 'Metalness', {
+        //     min: 0,
+        //     max: 1,
+        //     step: 0.01,
+        // }).on('change', (ev) => {
+        //     canvas3D.metalness = ev.value;
+        // });
 
-        canvas3DFolder.addBinding(canvas3DParams, 'Roughness', {
-            min: 0,
-            max: 1,
-            step: 0.01,
-        }).on('change', (ev) => {
-            canvas3D.roughness = ev.value;
-        });
+        // canvas3DFolder.addBinding(canvas3DParams, 'Roughness', {
+        //     min: 0,
+        //     max: 1,
+        //     step: 0.01,
+        // }).on('change', (ev) => {
+        //     canvas3D.roughness = ev.value;
+        // });
 
-        canvas3DFolder.addBinding(canvas3DParams, 'Exposure', {
-            min: 0,
-            max: 5,
-            step: 0.01,
-        }).on('change', (ev) => {
-            canvas3D.exposure = ev.value;
-        });
+        // canvas3DFolder.addBinding(canvas3DParams, 'Exposure', {
+        //     min: 0,
+        //     max: 5,
+        //     step: 0.01,
+        // }).on('change', (ev) => {
+        //     canvas3D.exposure = ev.value;
+        // });
 
         canvas3DFolder.addBinding(canvas3DParams, 'Blur', {
             min: 20,
@@ -91,8 +100,5 @@ export default class GUI {
         }).on('change', (ev) => {
            canvas3D.blurRadius = ev.value;
         });
-
-
     }
-    
-    }
+}

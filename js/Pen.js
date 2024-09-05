@@ -5,8 +5,6 @@ export default class Pen {
         this.paperCanvas = document.createElement('canvas');
         this.paperCanvas.id = 'PAPER';
         this.paperCanvas.style.position = 'fixed';
-        this.paperCanvas.style.top = '0';
-        this.paperCanvas.style.left = '0';
         this.paperCanvas.style.width = '100%';
         this.paperCanvas.style.height = '100%';
         this.paperCanvas.style.zIndex = '0';
@@ -30,22 +28,24 @@ export default class Pen {
 
         this.tool = new paper.Tool();
         this.path = null;
-        this.strokeWidth = 23; // Initial stroke width
-        this.strokeColor = 'white'; // Initial stroke color
-        this.smoothing = 5; // Adjusted smoothing value
+        this.strokeWidth = 23;
+        this.strokeColor = 'white'; 
+        this.smoothing = 5; 
+
+        this.circleRadius = 0; 
 
         this.tool.onMouseDown = (event) => {
             this.path = new paper.Path();
             this.path.strokeWidth = this.strokeWidth;
             this.path.strokeColor = this.strokeColor;
-            this.path.strokeCap = 'round';
+            this.path.strokeCap = 'square';
             this.path.add(event.point);
         };
 
         this.tool.onMouseDrag = (event) => {
             if (this.path) {
                 this.path.add(event.point);
-                this.path.smooth({ type: 'continuous', factor: 1.0 }); // Apply smoothing in real-time
+                this.path.smooth({ type: 'continuous', factor: 0.5 }); // Apply smoothing in real-time
             }
         };
 
@@ -53,6 +53,24 @@ export default class Pen {
             if (this.path) {
                 this.path.add(event.point);
                 this.path.simplify(this.smoothing); // Final smoothing when mouse is up
+
+                // Get the first and last points of the path
+                const startPoint = this.path.firstSegment.point;
+                const endPoint = this.path.lastSegment.point;
+
+                // Create circles at the start and end points
+                const startCircle = new paper.Path.Circle({
+                    center: startPoint,
+                    radius: this.circleRadius, // Radius for the circle at the extremity
+                    fillColor: this.strokeColor,
+                });
+
+                const endCircle = new paper.Path.Circle({
+                    center: endPoint,
+                    radius: this.circleRadius, // Radius for the circle at the extremity
+                    fillColor: this.strokeColor,
+                });
+
                 this.path = null;  // Reset path to ensure a new one is created for the next stroke
             }
         };
@@ -102,6 +120,10 @@ export default class Pen {
     // Method to update the stroke width
     setStrokeWidth(width) {
         this.strokeWidth = width;
+    }
+
+    setCircleRadius(radius) {
+        this.circleRadius = radius;
     }
 
     // Method to update the stroke color
