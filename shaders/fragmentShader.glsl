@@ -21,7 +21,7 @@ vec4 thresholding(vec4 texColor, float threshold) {
 // Function to compute normal from height with smoothing
 vec3 computeNormalFromHeight(float height, vec2 uv) {
     vec2 texelSize = 1.0 / iResolution.xy;
-    float stepSize = 30.0; // Step size to sample further out pixels; adjust for smoother results
+    float stepSize = 5.0; // Step size to sample further out pixels; adjust for smoother results
 
     // Sample multiple neighboring pixels for smoother gradient calculation
     float heightLeft = texture2D(u_texture, uv - vec2(stepSize * texelSize.x, 0.0)).r;
@@ -37,7 +37,7 @@ vec3 computeNormalFromHeight(float height, vec2 uv) {
     vec3 normal = normalize(cross(dx, dy));
 
     // Optionally adjust the normal based on height
-    normal.z = mix(normal.z, height * 5.0 - 1.0, 0.5);
+    normal.z = mix(normal.z, height * 1.0 - 1.0, 0.5);
 
     if (normal.z <= 0.0) {
         normal = vec3(1.0, 1.0, 1.0);
