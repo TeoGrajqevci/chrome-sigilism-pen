@@ -6,6 +6,151 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 
+const vertexShaderCode = `varying vec2 vUv;
+void main() {
+ vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+    // gl_Position = vec4(position, 1.0);
+}`;
+const fragmentShaderCode = `uniform sampler2D u_texture;
+uniform vec2 iResolution;
+varying vec2 vUv;
+
+vec4 thresholding(vec4 texColor, float threshold) {
+    float bright = 0.33333333 * (texColor.r + texColor.g + texColor.b);
+    float smoothThreshold = smoothstep(threshold - 0.0, threshold + 0.0, bright);
+    vec3 finalColor = vec3(smoothThreshold);
+    finalColor = 1.0 - finalColor;
+
+    if (smoothThreshold > -1. && (texColor.r < threshold + 0.2 || texColor.g < threshold + 0.2 || texColor.b < threshold + 0.2)) {
+        finalColor = vec3(1.0); 
+    } else {
+        finalColor = vec3(0.0); 
+    }
+
+    return vec4(finalColor, 1.0);
+}
+
+vec3 computeNormalFromHeight(float height, vec2 uv) {
+    vec2 texelSize = 1.0 / iResolution.xy;
+    float stepSize = 30.0; 
+
+    // Sample multiple neighboring pixels for smoother gradient calculation
+    float heightLeft = texture2D(u_texture, uv - vec2(stepSize * texelSize.x, 0.0)).r;
+    float heightRight = texture2D(u_texture, uv + vec2(stepSize * texelSize.x, 0.0)).r;
+    float heightUp = texture2D(u_texture, uv - vec2(0.0, stepSize * texelSize.y)).r;
+    float heightDown = texture2D(u_texture, uv + vec2(0.0, stepSize * texelSize.y)).r;
+
+    // Compute gradients with adjusted sampling
+    vec3 dx = vec3(heightRight - heightLeft, 0.0, stepSize * 2.0 * texelSize.x);
+    vec3 dy = vec3(0.0, heightDown - heightUp, stepSize * 2.0 * texelSize.y);
+
+    vec3 normal = normalize(cross(dx, dy));
+
+    normal.z = mix(normal.z, height * 2.5 - 1.0, 0.5);
+
+    if (normal.z <= 0.0) {
+        normal = vec3(1.0);
+    }
+
+    return normal * 0.5 + 0.5;
+}
+
+void main() {
+    vec4 color = texture2D(u_texture, vUv);
+  
+    color = 1.0 - color;
+    color = thresholding(color, 0.3);
+
+    vec3 normal = computeNormalFromHeight(color.r, vUv);
+
+    float alpha = 1.0;
+
+
+    // if (normal.z <= 1.0) {
+    //     alpha = 0.0;
+    // }
+
+    gl_FragColor = vec4(normal, alpha);
+}
+`;
+const alphaFragmentShaderCode = `uniform sampler2D u_texture;
+varying vec2 vUv;
+
+
+vec4 thresholding(vec4 texColor, float threshold) {
+    float bright = 0.33333333 * (texColor.r + texColor.g + texColor.b);
+    float smoothThreshold = smoothstep(threshold - 0.0, threshold + 0.0, bright);
+    vec3 finalColor = vec3(smoothThreshold);
+    finalColor = 1.0 - finalColor;
+
+    if (smoothThreshold > -1. && (texColor.r < threshold + 0.2 || texColor.g < threshold + 0.2 || texColor.b < threshold + 0.2)) {
+        finalColor = vec3(1.0); 
+    } else {
+        finalColor = vec3(0.0); 
+    }
+
+    return vec4(finalColor, 1.0);
+}
+
+void main() {
+    vec4 color = texture2D(u_texture, vUv);
+  
+    color = 1.0 - color;
+    color = thresholding(color, 0.3);
+
+    gl_FragColor = color;
+}`;
+const customVertexShaderCode = `varying vec2 vUv;
+
+void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+const customFragmentShaderCode = `varying vec2 vUv;
+uniform sampler2D tDiffuse;
+uniform float exposure; 
+
+void main()
+{
+    vec2 xy= vUv;
+   
+    xy*=2.;
+    
+    float l1=step(xy.x,1.);
+    float l2=step(xy.y,1.);
+    float m1=l1*l2;
+    
+     l1=step(xy.x,1.);
+     l2=step(1.,xy.y);
+    float m2=l1*l2;
+    
+    l1=step(1.,xy.x);
+     l2=step(1.,xy.y);
+    float m3=l1*l2;
+    
+    l1=step(1.,xy.x);
+    l2=step(xy.y,1.);
+    float m4=l1*l2;
+    xy.x=m1*xy.x+m2*xy.x+m3*(2.-xy.x)+m4*(2.-xy.x);
+    xy.y=m1*(1.-xy.y)+m2*(xy.y-1.)+m3*(xy.y-1.)+m4*(1.-xy.y);
+
+    vec4 texColor=texture2D(tDiffuse,vUv);
+
+    texColor.rgb*=exposure;
+
+    //     // float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+//     // color.rgb = vec3(gray);
+
+//     // if (color.r < 0.1 || color.g < 0.1 || color.b < 0.1) {
+//     //     color.rgb = vec3(1.0);
+//     // } 
+
+    gl_FragColor=texColor;
+}`;
+
 export default class Canvas3D {
     constructor() {
         this.metalness = 1.0;
@@ -94,13 +239,13 @@ export default class Canvas3D {
 
         try {
             const [vertexShader, fragmentShader, alphaFragmentShader, customVertexShader, customFragmentShader] = await Promise.all([
-                this.loadShader('shaders/vertexShader.glsl'),
-                this.loadShader('shaders/fragmentShader.glsl'),
-                this.loadShader('shaders/alphaFragmentShader.glsl'),
-                this.loadShader('shaders/customVertexShader.glsl'),
-                this.loadShader('shaders/customFragmentShader.glsl')
+                this.loadShader(vertexShaderCode, true),
+                this.loadShader(fragmentShaderCode, true),
+                this.loadShader(alphaFragmentShaderCode, true),
+                this.loadShader(customVertexShaderCode, true),
+                this.loadShader(customFragmentShaderCode, true)
             ]);
-
+        
             this.offscreenMaterial = new THREE.ShaderMaterial({
                 uniforms: {
                     u_texture: { value: this.canvasTexture },
@@ -110,7 +255,7 @@ export default class Canvas3D {
                 fragmentShader: fragmentShader,
                 side: THREE.DoubleSide,
             });
-
+        
             this.alphaMapMaterial = new THREE.ShaderMaterial({
                 uniforms: {
                     u_texture: { value: this.canvasTexture },
@@ -120,13 +265,13 @@ export default class Canvas3D {
                 fragmentShader: alphaFragmentShader,
                 side: THREE.DoubleSide,
             });
-
+        
             const offscreenQuad = new THREE.Mesh(
                 new THREE.PlaneGeometry(this.plane.x, this.plane.y),
                 this.offscreenMaterial
             );
             this.offscreenScene.add(offscreenQuad);
-
+        
             this.customShaderPass = new ShaderPass({
                 uniforms: {
                     tDiffuse: { value: null },
@@ -189,15 +334,20 @@ export default class Canvas3D {
         this.composer.addPass(this.customShaderPass);
     }
 
-    async loadShader(url) {
-        try {
-            const response = await fetch(url);
-            return await response.text();
-        } catch (error) {
-            console.error(`Error loading shader from ${url}:`, error);
-            return '';
+    async loadShader(input, isRaw = false) {
+        if (isRaw) {
+            return input;
+        } else {
+            try {
+                const response = await fetch(input);
+                return await response.text();
+            } catch (error) {
+                console.error(`Error loading shader from ${input}:`, error);
+                return '';
+            }
         }
     }
+    
 
     calculateRatio() {
         const ratio = window.innerWidth / window.innerHeight;
