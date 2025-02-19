@@ -39,22 +39,25 @@ export default class Canvas3D {
 
         this.pixelRatio;
 
-        this.hdr = {
-            country : './spruit_sunrise_2k.hdr',
-            studio: './studio_small_03_2k.hdr',
-        }
-
         this.init();
     }
 
     async init() {
-        this.renderer = new THREE.WebGLRenderer({ antialias: false });
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setPixelRatio(this.pixelRatio);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
         this.renderer.domElement.style.pointerEvents = 'none';
+        this.renderer.domElement.style.position = 'fixed';
+        // this.renderer.domElement.style.top = "10%";
+        // this.renderer.domElement.style.left = "20%";
+        // this.renderer.domElement.style.border = "1px solid white";
+        // this.renderer.domElement.style.borderRadius = "100px";
+
         this.renderer.domElement.style.zIndex = 1;
+        this.renderer.domElement.style.width ="100%";
+        this.renderer.domElement.style.height ="100%";
 
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = this.exposure;
@@ -63,10 +66,8 @@ export default class Canvas3D {
 
         this.scene = new THREE.Scene();
 
-        // Create the canvas texture
         this.canvasTexture = new THREE.CanvasTexture(this.pen.paperCanvas);
 
-        // Create WebGLRenderTarget for the main scene
         this.renderTarget = new THREE.WebGLRenderTarget(
             window.innerWidth,
             window.innerHeight,
@@ -78,7 +79,6 @@ export default class Canvas3D {
             }
         );
 
-        // Create WebGLRenderTarget for the alpha map
         this.alphaMapRenderTarget = new THREE.WebGLRenderTarget(
             window.innerWidth,
             window.innerHeight,
@@ -90,10 +90,8 @@ export default class Canvas3D {
             }
         );
 
-        // Create an offscreen scene for rendering the shader
         this.offscreenScene = new THREE.Scene();
 
-        // Load shaders and create ShaderMaterial
         try {
             const [vertexShader, fragmentShader, alphaFragmentShader, customVertexShader, customFragmentShader] = await Promise.all([
                 this.loadShader('shaders/vertexShader.glsl'),
@@ -103,7 +101,6 @@ export default class Canvas3D {
                 this.loadShader('shaders/customFragmentShader.glsl')
             ]);
 
-            // Main shader material
             this.offscreenMaterial = new THREE.ShaderMaterial({
                 uniforms: {
                     u_texture: { value: this.canvasTexture },
@@ -114,7 +111,6 @@ export default class Canvas3D {
                 side: THREE.DoubleSide,
             });
 
-            // Alpha shader material
             this.alphaMapMaterial = new THREE.ShaderMaterial({
                 uniforms: {
                     u_texture: { value: this.canvasTexture },
@@ -125,14 +121,12 @@ export default class Canvas3D {
                 side: THREE.DoubleSide,
             });
 
-            // Fullscreen quad for offscreen rendering
             const offscreenQuad = new THREE.Mesh(
                 new THREE.PlaneGeometry(this.plane.x, this.plane.y),
                 this.offscreenMaterial
             );
             this.offscreenScene.add(offscreenQuad);
 
-            // Custom shader pass
             this.customShaderPass = new ShaderPass({
                 uniforms: {
                     tDiffuse: { value: null },
@@ -147,7 +141,6 @@ export default class Canvas3D {
             return;
         }
 
-        // Create material for the main scene
         this.material = new THREE.MeshStandardMaterial({
             metalness: this.metalness,
             roughness: this.roughness,
@@ -157,24 +150,23 @@ export default class Canvas3D {
             side: THREE.DoubleSide,
         });
 
-        // Create geometry and add it to the main scene
         this.geometry = new THREE.Mesh(
             new THREE.PlaneGeometry(this.plane.x, this.plane.y),
             this.material
         );
         this.scene.add(this.geometry);
 
-        // Setup camera
         this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.001, 200);
         this.camera.position.set(0.0, 0.0, -2.15);
 
-        // Setup OrbitControls
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-        // Load HDR texture using RGBELoader
-        this.loadHDR(this.hdr.studio);
+        this.loader = new RGBELoader();
+        this.loader.load('./studio_small_03_2k.hdr', (texture) => {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            this.scene.environment = texture;
+        });
 
-        // Initialize post-processing
         this.initPostProcessing();
 
         window.addEventListener('resize', this.resize.bind(this));
@@ -182,29 +174,18 @@ export default class Canvas3D {
         setInterval(() => {
             this.canvasTexture.needsUpdate = true;
             this.applyBlurAndUpdateCanvasTexture();
-        }, 60);
+        }, 30);
    
         
     }
 
-    loadHDR(url) {
-        this.loader = new RGBELoader();
-        this.loader.load(url, (texture) => {
-            texture.mapping = THREE.EquirectangularReflectionMapping;
-            this.scene.environment = texture;
-            // this.scene.background = texture;
-        });
-    }
-
     initPostProcessing() {
-        // Create EffectComposer
+
         this.composer = new EffectComposer(this.renderer);
         
-        // Render pass
         this.renderPass = new RenderPass(this.scene, this.camera);
         this.composer.addPass(this.renderPass);
 
-        // Add the custom shader pass
         this.composer.addPass(this.customShaderPass);
     }
 
@@ -248,14 +229,11 @@ export default class Canvas3D {
             this.blurRadius = 58;
         }
 
-        // Apply the blur filter before drawing the image from the DrawingCanvas
         offscreenContext.filter = `blur(${this.blurRadius}px)`;
         offscreenContext.drawImage(this.pen.paperCanvas, 0, 0);
 
-        // Create a Three.js texture from the offscreen canvas
         const texture = new THREE.CanvasTexture(offscreenCanvas);
 
-        // Set the blurred texture to the shader material uniform
         if (this.offscreenMaterial) {
             this.offscreenMaterial.uniforms.u_texture.value = texture;
         }
@@ -287,24 +265,34 @@ export default class Canvas3D {
 
     updatePixelRatio(fps) {
 
+        const minFps = 5;
+        const maxFps = 60;
+        const minRatio = 0.1;
+        const maxRatio = 2;
+
+        
+
     document.addEventListener('mousedown', () => {
-        if (fps < 30) {
-            this.pixelRatio = 0.3;
+        if (fps < 10) {
+            this.pixelRatio = 0.1;
+        } else if (fps < 20) {
+            this.pixelRatio = 0.25;
+        } else if (fps < 30) {
+            this.pixelRatio = 0.35;
         } else if (fps < 40) {
-            this.pixelRatio = 0.7;
-        } else {
-            this.pixelRatio = 1.2;
+            this.pixelRatio = 0.5;
+        } else if (fps < 50) {
+            this.pixelRatio = 1;
+        } else if (fps < 55) {
+            this.pixelRatio = 2;
         }
+
     });
 
     document.addEventListener('mouseup', () => {
         this.pixelRatio = 2;
     });
-
         this.renderer.setPixelRatio(this.pixelRatio);
-
-       
-
         console.log('Pixel ratio:', this.pixelRatio);
     }
 
@@ -314,40 +302,29 @@ export default class Canvas3D {
             return;
         }
 
-        
-
       this.logFPS();
-        // console.log('FPS:', this.fps)
 
         this.updatePixelRatio(this.fps);
 
-        // Render the offscreen scene for the main render target
         this.renderer.setRenderTarget(this.renderTarget);
         this.renderer.render(this.offscreenScene, this.camera);
 
-        // Render the offscreen scene for the alphaMap render target
         this.renderer.setRenderTarget(this.alphaMapRenderTarget);
         this.offscreenScene.overrideMaterial = this.alphaMapMaterial;
         this.renderer.render(this.offscreenScene, this.camera);
         this.offscreenScene.overrideMaterial = null;
 
-        // Reset render target
         this.renderer.setRenderTarget(null);
 
-        // Update material properties based on sliders or other inputs
         this.geometry.material.metalness = this.metalness;
         this.geometry.material.roughness = this.roughness;
 
-        // Update tone mapping exposure
         this.renderer.toneMappingExposure = this.exposure;
 
-        // Assign the alpha map texture to the material
         this.geometry.material.alphaMap = this.alphaMapRenderTarget.texture;
 
-        // Update controls
         this.controls.update();
 
-        // Render the scene with post-processing
         this.composer.render();
     }
 }

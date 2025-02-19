@@ -1,8 +1,7 @@
 uniform sampler2D u_texture;
-uniform vec2 iResolution;
 varying vec2 vUv;
 
-// Function to apply thresholding
+
 vec4 thresholding(vec4 texColor, float threshold) {
     float bright = 0.33333333 * (texColor.r + texColor.g + texColor.b);
     float smoothThreshold = smoothstep(threshold - 0.0, threshold + 0.0, bright);

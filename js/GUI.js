@@ -23,7 +23,7 @@ export default class GUI {
 
         penFolder.addBinding(pen , 'circleRadius', {
             min: 0,
-            max: 75,
+            max: 100,
             step: 1,
         }).on('change', (ev) => {
             pen.circleRadius = ev.value;
@@ -59,11 +59,10 @@ export default class GUI {
 
 
         let canvas3DParams = {
-            // Metalness: canvas3D.metalness,
-            // Roughness: canvas3D.roughness,
-            // Exposure: canvas3D.exposure,
+            Metalness: canvas3D.metalness,
+            Roughness: canvas3D.roughness,
+            Exposure: canvas3D.exposure,
             Blur: canvas3D.blurRadius = 33,
-            HDR: canvas3D.hdr = 'studio' ,
         };
 
         const canvas3DFolder = pane.addFolder({
@@ -93,16 +92,6 @@ export default class GUI {
         // }).on('change', (ev) => {
         //     canvas3D.exposure = ev.value;
         // });
-
-        canvas3DFolder.addBinding(canvas3DParams, 'HDR',{
-            options: {
-                Studio: 'studio',
-                Country: 'country'
-            }
-            })
-            .on('change', (ev) => {
-                canvas3D.hdr = ev.value;
-            });
 
         canvas3DFolder.addBinding(canvas3DParams, 'Blur', {
             min: 20,
